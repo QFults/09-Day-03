@@ -9,4 +9,6 @@ const Owner = new Schema({
   }]
 })
 
+Owner.plugin(require('passport-local-mongoose'))
+
 module.exports = model('Owner', Owner)
