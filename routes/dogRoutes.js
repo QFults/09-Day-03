@@ -1,21 +1,25 @@
 const router = require('express').Router()
-const { Dog } = require('../models')
+const { Dog, Owner } = require('../models')
 
 Dog.obliterate = Dog.findByIdAndDelete
 
 // GET all dogs
 router.get('/dogs', (req, res) => Dog.find()
+  .populate('owner')
   .then(dogs => res.json(dogs))
   .catch(err => console.log(err)))
 
 // GET one dog
 router.get('/dogs/:id', (req, res) => Dog.findById(req.params.id)
+  .populate('owner')
   .then(dog => res.json(dog))
   .catch(err => console.log(err)))
 
 // POST one dog
 router.post('/dogs', (req, res) => Dog.create(req.body)
-  .then(dog => res.json(dog))
+  .then(dog => Owner.findByIdAndUpdate(dog.owner, { $push: { dogs: dog._id } })
+    .then(() => res.json(dog))
+    .catch(err => console.log(err)))
   .catch(err => console.log(err)))
 
 // PUT one dog
