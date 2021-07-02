@@ -5,8 +5,15 @@ const passport = require('passport')
 Dog.obliterate = Dog.findByIdAndDelete
 
 // GET all dogs
-router.get('/dogs', passport.authenticate('jwt'), (req, res) => Dog.find()
-  .populate('owner')
+router.get('/dogs', passport.authenticate('jwt'), (req, res) => Dog.aggregate([
+  {
+    $addFields: {
+      puppyCount: {
+        $sum: '$puppies.count'
+      }
+    }
+  }
+])
   .then(dogs => res.json(dogs))
   .catch(err => console.log(err)))
 
@@ -21,6 +28,7 @@ router.post('/dogs', passport.authenticate('jwt'), (req, res) => Dog.create({
   name: req.body.name,
   breed: req.body.breed,
   age: req.body.age,
+  puppies: req.body.puppies,
   owner: req.user._id
 })
   .then(dog => Owner.findByIdAndUpdate(dog.owner, { $push: { dogs: dog._id } })
